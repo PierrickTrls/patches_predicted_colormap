@@ -21,4 +21,4 @@ IdPatchN : {'x' : x0 coordinate , 'y' : y0 coordinate , 'feature' : float betwee
 
 Create color map using : <br/>
 
-command : <br/><pre><code>python produce_probability_slide.py --slidefolder path/to/your/slide/folder --outputfolder path/to/some/output/folder --jsonfolder path/to/json/previously/extracted --delta some_reduction_factor </code></pre>
+command : <br/><pre><code>python produce_probability_slide.py --slidefolder path/to/your/slide/folder --outputfolder path/to/some/output/folder --jsonfolder path/to/json/previously/extracted --delta some_reduction_factor(optionnal) </code></pre>

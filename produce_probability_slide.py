@@ -18,9 +18,11 @@ parser.add_argument("--slidefolder", type=str, help="path to the original slide 
 parser.add_argument("--outputfolder", type=str,default=os.getcwd(), help="path to an output directory.")
 parser.add_argument("--jsonfolder", type=str, help="path to the json containing patches positions")
 parser.add_argument("--delta", type=int, default=598, help="closest distance between two patches.")
+parser.add_argument("--var", type=float, default=0.2, help="Variance max to count predictions")
 args = parser.parse_args()
 
 outputfolder = args.outputfolder
+
 
 
 def export_segimages(slide, data,outputfolder,filename):
@@ -53,29 +55,32 @@ def export_segimages(slide, data,outputfolder,filename):
         y = int(y / args.delta)
         
         #Implemented for a binary classification problem
-        if data[patch]['feature'][0] > 0.5:
+        if data[patch]['feature'][0] > 0.5 and data[patch]['var'][0] < args.var:
             segimage[y, x, 0] = 1.0
             segimage[y, x, 1] = 1.0
             segimage[y, x, 2] = 1.0
-        else: 
+        if data[patch]['feature'][1] > 0.5 and data[patch]['var'][1] < args.var:
             segimage[y, x, 0] = 1.0
             segimage[y, x, 1] = 0.0
             segimage[y, x, 2] = 0.0
 
-    imsave(os.path.join(outputfolder, filename+"_hypothese.png"), img_as_ubyte(segimage))
+    imsave(os.path.join(outputfolder, filename+'_'+str(args.var)+"_hypothese.png"), img_as_ubyte(segimage))
     print("working on ",slide)
 
-    # slide = OpenSlide(slide)
-    # img = slide.read_region((0, 0),6, slide.level_dimensions[6])
-    # img = numpy.array(img)[:, :, 0:-1]
-    # print(img.shape)
-    # imsave(os.path.join(outputfolder, filename+"_original.png"), img)
+
+    slide = OpenSlide(slide)
+    img = slide.read_region((0, 0),7, slide.level_dimensions[7])
+    img = numpy.array(img)[:, :, 0:-1]
+    
+    empty_img = numpy.zeros(shape=(img.shape),dtype='uint8')
+    print('shape vide = ',empty_img.shape)
+    imsave(os.path.join(outputfolder, filename+"empty.png"), empty_img)
 
 for file in os.listdir(args.jsonfolder):
     filename = file[:-5]
     if filename in os.listdir(args.slidefolder):
         
-        with open(file) as json_file: 
+        with open(os.path.join(args.jsonfolder,file)) as json_file: 
             data = json.load(json_file) 
 
         export_segimages(os.path.join(args.slidefolder, filename+".mrxs"),data, outputfolder,filename)
